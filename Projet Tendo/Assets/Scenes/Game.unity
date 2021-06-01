@@ -246,7 +246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TilePrefab: {fileID: 8926627287215039118, guid: b88c4c7874e06954683f4c9cb31838f2,
     type: 3}
-  ReturnButton: {fileID: 0}
+  ReturnButton: {fileID: 1574440414}
   Scale: 500
 --- !u!4 &991698734
 Transform:
@@ -262,6 +262,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1574440414 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1312552204706609468, guid: fae650f0e261771489a2bbc0f4b13e47,
+    type: 3}
+  m_PrefabInstance: {fileID: 2069125106}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1838363684
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public enum Direction
 {
@@ -26,7 +27,6 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        /** Initialisation **/
         // TODO set sprite en fonction de l'OS
 
         Rect cropRect = _sprite.rect;
@@ -36,8 +36,9 @@ public class GameManager : MonoBehaviour
         float yStep = _sprite.rect.height/ _nbRow;
         int index = 0;
 
-        Transform gridContainer = GameObject.Find("GridContainer").transform;
+        /** Initialisation **/
 
+        Transform gridContainer = GameObject.Find("GridContainer").transform;
         _grid = new GameObject[_nbCol,_nbRow];
         for (int i = 0; i < _nbCol; i++)
             for (int j = 0; j < _nbRow; j++)
@@ -56,8 +57,22 @@ public class GameManager : MonoBehaviour
                 tileSprite.sprite = Sprite.Create(_sprite.texture, cropRect, new Vector2(0,1), 100);
                 _grid[i, j].transform.position = new Vector3(i*3-3, j*3-3, 0);
             }
-        
-        //TODO mix puis disable 1
+
+        /** Mélange des tiles **/
+
+        tileScript = _grid[Random.Range(0,_nbCol), Random.Range(0, _nbRow)].GetComponent<Tile>();
+        Tile tmpTile;
+        for (int i = 0; i < 100; i++)
+        {
+            tmpTile = GetNextTile(tileScript, (Direction)Random.Range(0, 4));
+            TileSwap(tileScript, tmpTile);
+        }
+        while (tileScript.col!=_nbCol/2 || tileScript.row!=_nbRow/2)    //TODO refaire à la main
+        {
+            tmpTile = GetNextTile(tileScript, (Direction)Random.Range(0, 4));
+            TileSwap(tileScript, tmpTile);
+        }
+        tileScript.Masked = true;
     }
 
     /**
@@ -65,13 +80,18 @@ public class GameManager : MonoBehaviour
      */
     public void TileEvent(Tile tile, Direction dir)
     {
-        Tile newTile;
-        // TODO CheckMoove & get the other tile
-        Debug.Log(tile.Index + ":" + (((newTile=GetNextTile(tile, dir)) == null)? "out" : newTile.Index.ToString()));
-        
+        if (tile.Masked == true)
+            return;
+        Tile newTile = GetNextTile(tile, dir);
+        //Debug.Log(tile.Index + ":" + ((newTile == null)? "out" : newTile.Index.ToString()));
+        if (newTile == null || !newTile.Masked)
+            return;
+        TileSwap(tile, newTile);
+        CheckWinCondition();
     }
+
     /**
-     * return the Tile next to origin toward dir or null if no any
+     * return la Tile à coté d'origin vers dir, ou null si aucune
      */
     private Tile GetNextTile(Tile origin, Direction dir)
     {
@@ -96,19 +116,51 @@ public class GameManager : MonoBehaviour
             return null;
         return _grid[nextCol, nextRow].GetComponent<Tile>();
     }
+
     /**
      * vérifie si la partie est terminée
      */
     private bool CheckWinCondition()
     {
-        return false;   //TODO
+        bool win = true;
+        int lastIndex = -1;
+        int index;
+        for (int i = 0; i < _nbCol; i++)
+            for (int j = 0; j < _nbRow; j++)
+            {
+                index = _grid[i, j].GetComponent<Tile>().Index;
+                Debug.Log(lastIndex + " : " + index);
+                if (lastIndex + 1 != index)
+                    win = false;
+                lastIndex = index;
+            }
+        if (win)
+            SceneManager.LoadScene("Menu principal");
+        return win;
     }
 
     /**
      * swap les deux Tile
      */
-    private void TileMoove(Tile a, Tile b)
+    private void TileSwap(Tile a, Tile b)
     {
-        // TODO
+        if (a == null || b == null)
+            return;
+
+        /* Temporary value for swap */
+        int row = a.row;
+        int col = a.col;
+        Vector3 pos = a.transform.position;
+
+        a.transform.position = b.transform.position;
+        a.row = b.row;
+        a.col = b.col;
+
+        b.transform.position = pos;
+        b.row = row;
+        b.col = col;
+
+        _grid[a.col,a.row] = a.gameObject;
+        _grid[b.col,b.row] = b.gameObject;
     }
 }

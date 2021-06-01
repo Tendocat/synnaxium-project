@@ -16,18 +16,34 @@ public enum Direction
 public class GameManager : MonoBehaviour
 {
     public GameObject TilePrefab;
+    public GameObject ReturnButton;
     public float Scale = 1;
 
     private int _nbRow = 3;
     private int _nbCol = 3;
 
     private GameObject[,] _grid;
-    public Sprite _sprite;
+    private Sprite _sprite;
 
     // Start is called before the first frame update
     void Start()
     {
         // TODO set sprite en fonction de l'OS
+        switch (Application.platform)
+        {
+            case RuntimePlatform.OSXEditor:
+            case RuntimePlatform.OSXPlayer:
+            case RuntimePlatform.IPhonePlayer:
+                _sprite = Resources.Load<Sprite>("Apple");
+                break;
+            case RuntimePlatform.WindowsPlayer:
+            case RuntimePlatform.WindowsEditor:
+                _sprite = Resources.Load<Sprite>("Windows");
+                break;
+            case RuntimePlatform.Android:
+                _sprite = Resources.Load<Sprite>("Android");
+                break;
+        }
 
         Rect cropRect = _sprite.rect;
         Image tileSprite;
@@ -129,16 +145,28 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j < _nbRow; j++)
             {
                 index = _grid[i, j].GetComponent<Tile>().Index;
-                Debug.Log(lastIndex + " : " + index);
                 if (lastIndex + 1 != index)
                     win = false;
                 lastIndex = index;
             }
         if (win)
-            SceneManager.LoadScene("Menu principal");
+            Win();
         return win;
     }
 
+    /**
+     * lance l'animation de fin et ouvre le menu
+     */
+    private void Win()
+    {
+        for (int i = 0; i < _nbCol; i++)
+            for (int j = 0; j < _nbRow; j++)
+            {
+                _grid[i, j].GetComponent<Tile>().Masked = false;
+            }
+        ReturnButton.SetActive(true);
+        //SceneManager.LoadScene("Menu principal");
+    }
     /**
      * swap les deux Tile
      */

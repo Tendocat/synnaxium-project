@@ -12,6 +12,7 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
     private Vector2 _originalMousePosition = Vector2.zero;
     private bool _hasDrag = true;
 
+    public Vector3 TargetPosition;
     public int col, row;
     public int Index
     {
@@ -31,18 +32,24 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
             _masked = value;
                 Image i = GetComponentInChildren<Image>();
             if (_masked)
-                i.CrossFadeColor(new Color(0, 0, 0, 0), 1f, false, true);
-            //i.color = new Color(0, 0, 0, 0);
+                i.CrossFadeColor(new Color(255, 255, 255, 0), 1f, false, true);
             else
-                i.CrossFadeColor(new Color(0, 0, 0, 1), 1f, false, true);
+                i.CrossFadeColor(new Color(255, 255, 255, 1), 1f, false, true);
         }
     }
 
     void Start()
     {
         _gameManager = FindObjectOfType<GameManager>();
+        TargetPosition = transform.position;
     }
 
+    /* TODO smooth swap
+    void Update()
+    {
+        transform.position = Vector3.Lerp(transform.position, TargetPosition, 0.1f);
+    }
+    */
     public void OnDrag(PointerEventData eventData)
     {
         if (_hasDrag)

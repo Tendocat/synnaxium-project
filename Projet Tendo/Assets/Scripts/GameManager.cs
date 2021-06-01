@@ -16,6 +16,7 @@ public enum Direction
 public class GameManager : MonoBehaviour
 {
     public GameObject TilePrefab;
+    public GameObject ExplosionPrefab;
     public GameObject ReturnButton;
     public float Scale = 1;
 
@@ -70,15 +71,16 @@ public class GameManager : MonoBehaviour
                 cropRect.y = j * yStep;
                 cropRect.xMax = (i+1) * xStep;
                 cropRect.yMax = (j+1) * yStep;
-                tileSprite.sprite = Sprite.Create(_sprite.texture, cropRect, new Vector2(0,1), 100);
-                _grid[i, j].transform.position = new Vector3(i*3-3, j*3-3, 0);
+                tileSprite.sprite = Sprite.Create(_sprite.texture, cropRect, new Vector2(0.5f,0.5f), 100);
+                _grid[i, j].transform.position = new Vector3(i*1.9f - 1.9f, j*1.9f - 1.9f, 0);
             }
+        ReturnButton.transform.SetAsLastSibling();
 
         /** Mélange des tiles **/
 
         tileScript = _grid[Random.Range(0,_nbCol), Random.Range(0, _nbRow)].GetComponent<Tile>();
         Tile tmpTile;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 0; i++)
         {
             tmpTile = GetNextTile(tileScript, (Direction)Random.Range(0, 4));
             TileSwap(tileScript, tmpTile);
@@ -164,8 +166,21 @@ public class GameManager : MonoBehaviour
             {
                 _grid[i, j].GetComponent<Tile>().Masked = false;
             }
-        ReturnButton.SetActive(true);
-        //SceneManager.LoadScene("Menu principal");
+        StartCoroutine("WinExplosion");
+        ReturnButton.SendMessage("CenterAnimation");
+    }
+    public IEnumerator WinExplosion()
+    {
+        GameObject particule;
+        while (true)
+        {
+            particule = Instantiate(ExplosionPrefab);
+            particule.transform.position = Camera.main.ViewportToWorldPoint(new Vector2(Random.value, Random.value));
+            particule.transform.position = new Vector3(particule.transform.position.x, particule.transform.position.y, 0);
+            particule.GetComponent<ParticleSystem>().Play();
+            yield return new WaitForSeconds(1);
+            Destroy(particule, 1);
+        }
     }
     /**
      * swap les deux Tile

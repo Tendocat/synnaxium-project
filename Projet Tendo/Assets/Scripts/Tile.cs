@@ -11,12 +11,15 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
     private int _index;
     private bool _masked = false;
     private Vector2 _originalMousePosition = Vector2.zero;
+    private Vector3 _targetPosition;
     private bool _hasDrag = true;
+    private SpriteRenderer _sprite;
+    private SlideEffect _slideEffect;
+    private UpscaleEffect _upScaleEffect;
     #endregion
 
     #region Public fields
     public Action<Tile, Direction> TileEvent;
-    public Vector3 TargetPosition;
     public int col, row;
     public int Index
     {
@@ -32,16 +35,31 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
         set
         {
             _masked = value;
-            SpriteRenderer i = GetComponent<SpriteRenderer>();
             if (_masked)
-                i.color = new Color(255, 255, 255, 0);
+                _sprite.enabled = false;
             else
-                i.color = new Color(255, 255, 255, 1);
+                _sprite.enabled = true;
+        }
+    }
+    public Vector3 TargetPosition
+    {
+        get => _targetPosition;
+        set
+        {
+            _targetPosition = value;
+            if (_slideEffect != null)
+                _slideEffect.StartEffect(_targetPosition);
+            else
+                transform.position = _targetPosition;
         }
     }
     #endregion
 
     #region API
+    public void Spawn(float delay)
+    {
+        StartCoroutine(SpawnEffect(delay));
+    }
     public void OnDrag(PointerEventData eventData)
     {
         if (_hasDrag)
@@ -63,7 +81,6 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
             else
                 dir = Direction.LEFT;
         }
-        //Debug.Log(mouseDirection + " " + dir);
         TileEvent.Invoke(this, dir);
     }
     public void OnPointerDown(PointerEventData eventData)
@@ -78,11 +95,21 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
     #region Unity methods
     void Awake()
     {
-        TargetPosition = transform.position;
+        _upScaleEffect = GetComponent<UpscaleEffect>();
+        _sprite = GetComponent<SpriteRenderer>();
     }
-    void Update()
+    void Start()
     {
-        transform.position = Vector3.Lerp(transform.position, TargetPosition, 0.1f * Time.deltaTime);
+        _slideEffect = GetComponent<SlideEffect>();
+    }
+    #endregion
+
+    #region Private
+    private IEnumerator SpawnEffect(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        _upScaleEffect.StartEffect();
+        Masked = false;
     }
     #endregion
 }

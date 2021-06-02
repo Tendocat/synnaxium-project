@@ -2,29 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UpscaleEffect : MonoBehaviour
+public class SlideEffect : MonoBehaviour
 {
     #region Serializable fields
     [SerializeField] private float Duration;
     #endregion
 
     #region API
-    public void StartEffect()
+    public void StartEffect(Vector3 target)
     {
-        StartCoroutine(UpScale());
+        StartCoroutine(Slide(target));
     }
     #endregion
 
     #region Private
-    private IEnumerator UpScale()
+    private IEnumerator Slide(Vector3 target)
     {
-        Vector3 _startScale = transform.localScale;
+        Vector3 _startPosition = transform.position;
         for (float t = 0f; t < Duration; t += Time.deltaTime)
         {
-            transform.localScale = Vector3.Lerp(Vector3.zero, _startScale, t / Duration);
+            transform.position = Vector3.Lerp(_startPosition, target, t / Duration);
             yield return null;
         }
-        transform.localScale = _startScale;
+        transform.position = target;
     }
     #endregion
 }

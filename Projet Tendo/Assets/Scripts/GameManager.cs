@@ -92,7 +92,7 @@ public class GameManager : MonoBehaviour
                 cropRect.xMax = (i+1) * xStep;
                 cropRect.yMax = (j+1) * yStep;
                 tileSprite.sprite = Sprite.Create(_sprite.texture, cropRect, new Vector2(0.5f,0.5f), 100);
-                tileInit.transform.position = new Vector3(i-1, j-1, 0);
+                tileInit.TargetPosition = new Vector3(i-1, j-1, 0);
             }
         ReturnButton.transform.SetAsLastSibling();
 
@@ -111,10 +111,15 @@ public class GameManager : MonoBehaviour
             TileSwap(tileInit, tmpTile);
         }
         tileInit.Masked = true;
+        float delay = 0;
         for (int i = 0; i < _nbCol; i++)
             for (int j = 0; j < _nbRow; j++)
             {
-
+                tileInit = _grid[i, j];
+                if (!tileInit.Masked) {
+                    tileInit.Spawn(delay);
+                    delay += 1 / 4f;
+                }
             }
         }
     #endregion
@@ -193,13 +198,13 @@ public class GameManager : MonoBehaviour
         /* Temporary value for swap */
         int row = a.row;
         int col = a.col;
-        Vector3 pos = a.transform.position;
+        Vector3 pos = a.TargetPosition;
 
-        a.transform.position = b.transform.position;
+        a.TargetPosition = b.TargetPosition;
         a.row = b.row;
         a.col = b.col;
 
-        b.transform.position = pos;
+        b.TargetPosition = pos;
         b.row = row;
         b.col = col;
 

@@ -64,7 +64,6 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
                 dir = Direction.LEFT;
         }
         //Debug.Log(mouseDirection + " " + dir);
-        //Invoke("TileEvent", this, dir);
         TileEvent.Invoke(this, dir);
     }
     public void OnPointerDown(PointerEventData eventData)
@@ -81,11 +80,9 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
     {
         TargetPosition = transform.position;
     }
-    /* TODO smooth swap
     void Update()
     {
         transform.position = Vector3.Lerp(transform.position, TargetPosition, 0.1f * Time.deltaTime);
     }
-    */
     #endregion
 }

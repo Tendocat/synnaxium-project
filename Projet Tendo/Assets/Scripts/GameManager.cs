@@ -111,7 +111,12 @@ public class GameManager : MonoBehaviour
             TileSwap(tileInit, tmpTile);
         }
         tileInit.Masked = true;
-    }
+        for (int i = 0; i < _nbCol; i++)
+            for (int j = 0; j < _nbRow; j++)
+            {
+
+            }
+        }
     #endregion
 
     #region Private

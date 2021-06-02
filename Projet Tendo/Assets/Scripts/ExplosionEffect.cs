@@ -17,7 +17,7 @@ public class ExplosionEffect : MonoBehaviour
         GameObject particule;
         for (int i=0; i<100; i++)
         {
-            particule = Instantiate(this.gameObject);
+            particule = Instantiate(gameObject);
             particule.transform.position = Camera.main.ViewportToWorldPoint(new Vector2(Random.value, Random.value));
             particule.transform.position = new Vector3(particule.transform.position.x, particule.transform.position.y, 0);
             particule.GetComponent<ParticleSystem>().Play();

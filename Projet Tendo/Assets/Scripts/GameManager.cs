@@ -26,7 +26,6 @@ public class GameManager : MonoBehaviour
     private int _nbRow = 3;
     private int _nbCol = 3;
     private Tile[,] _grid;
-    private Sprite _sprite;
     #endregion
 
     #region API
@@ -49,27 +48,28 @@ public class GameManager : MonoBehaviour
     #region Unity methods
     void Awake()
     {
+        Sprite[] sprite;
         switch (Application.platform)
         {
             case RuntimePlatform.OSXEditor:
             case RuntimePlatform.OSXPlayer:
             case RuntimePlatform.IPhonePlayer:
-                _sprite = Resources.Load<Sprite>("Apple");
+                sprite = Resources.LoadAll<Sprite>("Apple");
                 break;
             case RuntimePlatform.WindowsPlayer:
             case RuntimePlatform.WindowsEditor:
-                _sprite = Resources.Load<Sprite>("Windows");
+                sprite = Resources.LoadAll<Sprite>("Windows");
                 break;
             case RuntimePlatform.Android:
-                _sprite = Resources.Load<Sprite>("Android");
+                sprite = Resources.LoadAll<Sprite>("Android");
+                break;
+            default:
+                sprite = Resources.LoadAll<Sprite>("Windows");
                 break;
         }
 
-        Rect cropRect = _sprite.rect;
         SpriteRenderer tileSprite;
         Tile tileInit;
-        float xStep = _sprite.rect.width/ _nbCol;
-        float yStep = _sprite.rect.height/ _nbRow;
         int index = 0;
 
         /** Initialisation **/
@@ -83,16 +83,12 @@ public class GameManager : MonoBehaviour
                 tileSprite = tileInit.GetComponent<SpriteRenderer>();
                 _grid[i, j] = tileInit;
                 tileInit.TileEvent += TileAction;
-                tileInit.Index = index++;
+                tileInit.Index = index;
                 tileInit.col = i;
                 tileInit.row = j;
-
-                cropRect.x = i * xStep;
-                cropRect.y = j * yStep;
-                cropRect.xMax = (i+1) * xStep;
-                cropRect.yMax = (j+1) * yStep;
-                tileSprite.sprite = Sprite.Create(_sprite.texture, cropRect, new Vector2(0.5f,0.5f), 100);
+                tileSprite.sprite = sprite[j+i*3];
                 tileInit.TargetPosition = new Vector3(i-1, j-1, 0);
+                index++;
             }
         ReturnButton.transform.SetAsLastSibling();
 

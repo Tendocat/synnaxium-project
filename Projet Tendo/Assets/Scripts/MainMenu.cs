@@ -28,6 +28,8 @@ public class MainMenu : MonoBehaviour
     {
         PlayButton.onClick.AddListener(Play);
         QuitButton.onClick.AddListener(Quit);
+        PlayButton.GetComponent<UpscaleEffect>().StartEffect();
+        QuitButton.GetComponent<UpscaleEffect>().StartEffect();
     }
     #endregion
 

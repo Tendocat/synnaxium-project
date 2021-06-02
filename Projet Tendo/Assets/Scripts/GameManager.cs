@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 public enum Direction
 {
@@ -15,21 +16,39 @@ public enum Direction
 
 public class GameManager : MonoBehaviour
 {
-    public GameObject TilePrefab;
-    public GameObject ExplosionPrefab;
-    public GameObject ReturnButton;
-    public float Scale = 1;
+    #region Serialized fields
+    [SerializeField] private Tile TilePrefab;
+    [SerializeField] private ExplosionEffect ExplosionPrefab;
+    [SerializeField] private ReturnButton ReturnButton;
+    #endregion
 
+    #region Private fields
     private int _nbRow = 3;
     private int _nbCol = 3;
-
-    private GameObject[,] _grid;
+    private Tile[,] _grid;
     private Sprite _sprite;
+    #endregion
 
-    // Start is called before the first frame update
-    void Start()
+    #region API
+    /**
+     * appelé par Tile lors du drag
+     */
+    public void TileAction(Tile tile, Direction dir)
     {
-        // TODO set sprite en fonction de l'OS
+        if (tile.Masked == true)
+            return;
+        Tile newTile = GetNextTile(tile, dir);
+        //Debug.Log(tile.Index + ":" + ((newTile == null)? "out" : newTile.Index.ToString()));
+        if (newTile == null || !newTile.Masked)
+            return;
+        TileSwap(tile, newTile);
+        CheckWinCondition();
+    }
+    #endregion
+
+    #region Unity methods
+    void Awake()
+    {
         switch (Application.platform)
         {
             case RuntimePlatform.OSXEditor:
@@ -47,8 +66,8 @@ public class GameManager : MonoBehaviour
         }
 
         Rect cropRect = _sprite.rect;
-        Image tileSprite;
-        Tile tileScript;
+        SpriteRenderer tileSprite;
+        Tile tileInit;
         float xStep = _sprite.rect.width/ _nbCol;
         float yStep = _sprite.rect.height/ _nbRow;
         int index = 0;
@@ -56,58 +75,46 @@ public class GameManager : MonoBehaviour
         /** Initialisation **/
 
         Transform gridContainer = GameObject.Find("GridContainer").transform;
-        _grid = new GameObject[_nbCol,_nbRow];
+        _grid = new Tile[_nbCol,_nbRow];
         for (int i = 0; i < _nbCol; i++)
             for (int j = 0; j < _nbRow; j++)
             {
-                _grid[i,j] = Instantiate(TilePrefab, gridContainer);
-                tileSprite = _grid[i, j].GetComponent<Image>();
-                tileScript = _grid[i, j].GetComponent<Tile>();
-                tileScript.Index = index++;
-                tileScript.col = i;
-                tileScript.row = j;
+                tileInit = Instantiate(TilePrefab, gridContainer);
+                tileSprite = tileInit.GetComponent<SpriteRenderer>();
+                _grid[i, j] = tileInit;
+                tileInit.TileEvent += TileAction;
+                tileInit.Index = index++;
+                tileInit.col = i;
+                tileInit.row = j;
 
                 cropRect.x = i * xStep;
                 cropRect.y = j * yStep;
                 cropRect.xMax = (i+1) * xStep;
                 cropRect.yMax = (j+1) * yStep;
                 tileSprite.sprite = Sprite.Create(_sprite.texture, cropRect, new Vector2(0.5f,0.5f), 100);
-                _grid[i, j].transform.position = new Vector3(i*1.9f - 1.9f, j*1.9f - 1.9f, 0);
+                tileInit.transform.position = new Vector3(i-1, j-1, 0);
             }
         ReturnButton.transform.SetAsLastSibling();
 
-        /** Mélange des tiles **/
+        /** Mélange des tiles **/    //TODO refaire mieux
 
-        tileScript = _grid[Random.Range(0,_nbCol), Random.Range(0, _nbRow)].GetComponent<Tile>();
+        tileInit = _grid[Random.Range(0,_nbCol), Random.Range(0, _nbRow)];
         Tile tmpTile;
         for (int i = 0; i < 0; i++)
         {
-            tmpTile = GetNextTile(tileScript, (Direction)Random.Range(0, 4));
-            TileSwap(tileScript, tmpTile);
+            tmpTile = GetNextTile(tileInit, (Direction)Random.Range(0, 4));
+            TileSwap(tileInit, tmpTile);
         }
-        while (tileScript.col!=_nbCol/2 || tileScript.row!=_nbRow/2)    //TODO refaire à la main
+        while (tileInit.col!=_nbCol/2 || tileInit.row!=_nbRow/2)
         {
-            tmpTile = GetNextTile(tileScript, (Direction)Random.Range(0, 4));
-            TileSwap(tileScript, tmpTile);
+            tmpTile = GetNextTile(tileInit, (Direction)Random.Range(0, 4));
+            TileSwap(tileInit, tmpTile);
         }
-        tileScript.Masked = true;
+        tileInit.Masked = true;
     }
+    #endregion
 
-    /**
-     * appelé par Tile lors du drag
-     */
-    public void TileEvent(Tile tile, Direction dir)
-    {
-        if (tile.Masked == true)
-            return;
-        Tile newTile = GetNextTile(tile, dir);
-        //Debug.Log(tile.Index + ":" + ((newTile == null)? "out" : newTile.Index.ToString()));
-        if (newTile == null || !newTile.Masked)
-            return;
-        TileSwap(tile, newTile);
-        CheckWinCondition();
-    }
-
+    #region Private
     /**
      * return la Tile à coté d'origin vers dir, ou null si aucune
      */
@@ -132,7 +139,7 @@ public class GameManager : MonoBehaviour
         }
         if (nextCol < 0 || nextCol >= _nbCol || nextRow < 0 || nextRow >= _nbRow)
             return null;
-        return _grid[nextCol, nextRow].GetComponent<Tile>();
+        return _grid[nextCol, nextRow];
     }
 
     /**
@@ -146,7 +153,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < _nbCol; i++)
             for (int j = 0; j < _nbRow; j++)
             {
-                index = _grid[i, j].GetComponent<Tile>().Index;
+                index = _grid[i, j].Index;
                 if (lastIndex + 1 != index)
                     win = false;
                 lastIndex = index;
@@ -164,24 +171,12 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < _nbCol; i++)
             for (int j = 0; j < _nbRow; j++)
             {
-                _grid[i, j].GetComponent<Tile>().Masked = false;
+                _grid[i, j].Masked = false;
             }
-        StartCoroutine("WinExplosion");
-        ReturnButton.SendMessage("CenterAnimation");
+        ExplosionPrefab.StartExplosion();
+        ReturnButton.StartAnimation();
     }
-    public IEnumerator WinExplosion()
-    {
-        GameObject particule;
-        while (true)
-        {
-            particule = Instantiate(ExplosionPrefab);
-            particule.transform.position = Camera.main.ViewportToWorldPoint(new Vector2(Random.value, Random.value));
-            particule.transform.position = new Vector3(particule.transform.position.x, particule.transform.position.y, 0);
-            particule.GetComponent<ParticleSystem>().Play();
-            yield return new WaitForSeconds(1);
-            Destroy(particule, 1);
-        }
-    }
+
     /**
      * swap les deux Tile
      */
@@ -203,7 +198,8 @@ public class GameManager : MonoBehaviour
         b.row = row;
         b.col = col;
 
-        _grid[a.col,a.row] = a.gameObject;
-        _grid[b.col,b.row] = b.gameObject;
+        _grid[a.col,a.row] = a;
+        _grid[b.col,b.row] = b;
     }
+    #endregion
 }

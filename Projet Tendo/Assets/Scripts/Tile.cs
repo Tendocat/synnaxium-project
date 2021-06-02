@@ -3,15 +3,19 @@ using System.Collections.Generic;
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
 {
-    private GameManager _gameManager;
+    #region Private fields
     private int _index;
     private bool _masked = false;
     private Vector2 _originalMousePosition = Vector2.zero;
     private bool _hasDrag = true;
+    #endregion
 
+    #region Public fields
+    public Action<Tile, Direction> TileEvent;
     public Vector3 TargetPosition;
     public int col, row;
     public int Index
@@ -20,8 +24,6 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
         set
         {
             _index = value;
-            Text text = GetComponentInChildren<Text>();
-            text.text = _index.ToString();
         }
     }
     public bool Masked
@@ -30,26 +32,16 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
         set
         {
             _masked = value;
-                Image i = GetComponentInChildren<Image>();
+            SpriteRenderer i = GetComponent<SpriteRenderer>();
             if (_masked)
-                i.CrossFadeColor(new Color(255, 255, 255, 0), 1f, false, true);
+                i.color = new Color(255, 255, 255, 0);
             else
-                i.CrossFadeColor(new Color(255, 255, 255, 1), 1f, false, true);
+                i.color = new Color(255, 255, 255, 1);
         }
     }
+    #endregion
 
-    void Start()
-    {
-        _gameManager = FindObjectOfType<GameManager>();
-        TargetPosition = transform.position;
-    }
-
-    /* TODO smooth swap
-    void Update()
-    {
-        transform.position = Vector3.Lerp(transform.position, TargetPosition, 0.1f);
-    }
-    */
+    #region API
     public void OnDrag(PointerEventData eventData)
     {
         if (_hasDrag)
@@ -72,9 +64,9 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
                 dir = Direction.LEFT;
         }
         //Debug.Log(mouseDirection + " " + dir);
-        _gameManager.TileEvent(this, dir);
+        //Invoke("TileEvent", this, dir);
+        TileEvent.Invoke(this, dir);
     }
-
     public void OnPointerDown(PointerEventData eventData)
     {
         if (!_hasDrag)
@@ -82,4 +74,18 @@ public class Tile : MonoBehaviour, IPointerDownHandler, IDragHandler
         _hasDrag = false;
         _originalMousePosition = eventData.position;
     }
+    #endregion
+
+    #region Unity methods
+    void Awake()
+    {
+        TargetPosition = transform.position;
+    }
+    /* TODO smooth swap
+    void Update()
+    {
+        transform.position = Vector3.Lerp(transform.position, TargetPosition, 0.1f * Time.deltaTime);
+    }
+    */
+    #endregion
 }

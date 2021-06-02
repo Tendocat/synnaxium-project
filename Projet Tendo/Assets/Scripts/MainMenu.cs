@@ -3,38 +3,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
+    #region Serialized fields
+    [SerializeField] private Button PlayButton;
+    [SerializeField] private Button QuitButton;
+    #endregion
 
-    private RectTransform _rectTransform;
-
-    private void Awake()
-    {
-        _rectTransform = GetComponent<RectTransform>();
-    }
-
+    #region API
     public void Play()
     {
         SceneManager.LoadScene("Game");
     }
-    public void Exit()
+    public void Quit()
     {
         Application.Quit(0);
     }
-    public void Menu()
+    #endregion
+
+    #region Unity methods
+    private void Start()
     {
-        SceneManager.LoadScene("Menu principal");
+        PlayButton.onClick.AddListener(Play);
+        QuitButton.onClick.AddListener(Quit);
     }
-    public IEnumerator CenterAnimation()
-    {
-        while (Mathf.Abs(_rectTransform.anchorMin.x) > 0.501f || Mathf.Abs(_rectTransform.anchorMin.y) > 0.501f)
-        {
-            _rectTransform.anchorMin = new Vector2(Mathf.Lerp(_rectTransform.anchorMin.x, 0.5f, 0.01f),
-                                                   Mathf.Lerp(_rectTransform.anchorMin.y, 0.5f, 0.01f));
-            _rectTransform.anchorMax = new Vector2(Mathf.Lerp(_rectTransform.anchorMax.x, 0.5f, 0.01f),
-                                                   Mathf.Lerp(_rectTransform.anchorMax.y, 0.5f, 0.01f));
-            yield return null;
-        }
-    }
+    #endregion
+
 }

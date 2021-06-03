@@ -150,9 +150,9 @@ TextureImporter:
       name: Android_5
       rect:
         serializedVersion: 2
-        x: 518
+        x: 512
         y: 1024
-        width: 501
+        width: 512
         height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -276,7 +276,7 @@ TextureImporter:
       name: Android_3
       rect:
         serializedVersion: 2
-        x: 513
+        x: 512
         y: 0
         width: 512
         height: 512

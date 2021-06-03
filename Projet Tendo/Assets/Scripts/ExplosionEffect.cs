@@ -14,15 +14,15 @@ public class ExplosionEffect : MonoBehaviour
     #region Private
     private IEnumerator WinExplosion()
     {
-        GameObject particule;
+        GameObject [] particule = new GameObject[2];
+        particule[0] = gameObject;
+        particule[1] = Instantiate(gameObject);
         for (int i=0; i<100; i++)
         {
-            particule = Instantiate(gameObject);
-            particule.transform.position = Camera.main.ViewportToWorldPoint(new Vector2(Random.value, Random.value));
-            particule.transform.position = new Vector3(particule.transform.position.x, particule.transform.position.y, 0);
-            particule.GetComponent<ParticleSystem>().Play();
+            particule[i % 2].transform.position = Camera.main.ViewportToWorldPoint(new Vector2(Random.value, Random.value));
+            particule[i % 2].transform.position = new Vector3(particule[i % 2].transform.position.x, particule[i % 2].transform.position.y, 0);
+            particule[i % 2].GetComponent<ParticleSystem>().Play();
             yield return new WaitForSeconds(1);
-            Destroy(particule, 1);
         }
     }
     #endregion

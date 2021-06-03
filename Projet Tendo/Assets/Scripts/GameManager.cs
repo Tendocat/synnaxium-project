@@ -90,7 +90,6 @@ public class GameManager : MonoBehaviour
                 tileInit.TargetPosition = new Vector3(i-1, j-1, 0);
                 index++;
             }
-        ReturnButton.transform.SetAsLastSibling();
 
         /** Mélange des tiles **/    //TODO refaire mieux
 

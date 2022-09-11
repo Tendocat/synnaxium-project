@@ -1,5 +1,10 @@
 # Projet Tendo
 
+This little 9-tiles game was the test project at Synnaxium studio.
+It aimed to learn the code convention of the company.
+
+The following is the french explanation I got to do this game with Unity.
+
 Jeu du taquin en 3 cases par 3 cases.
 
 - Le jeu démarre sur un menu principal qui permet de lancer une partie ou de quitter.
